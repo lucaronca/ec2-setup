@@ -69,6 +69,22 @@ resource "aws_security_group" "app-sg" {
   }
 }
 
+resource "aws_security_group_rule" "app-sg-ssl" {
+  security_group_id = aws_security_group.app-sg.id
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+
+  count      = var.allow_tls ? 1 : 0
+  depends_on = [aws_security_group.app-sg]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 #AWS Instance
 resource "aws_instance" "app" {
   ami                         = data.aws_ami.app-machine.id

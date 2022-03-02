@@ -39,3 +39,8 @@ variable "instance_type" {
   type    = string
   default = "t2.micro"
 }
+
+variable "allow_tls" {
+  type    = bool
+  default = true
+}
