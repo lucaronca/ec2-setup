@@ -123,7 +123,10 @@ resource "aws_volume_attachment" "ebs_att" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "ec2-cpu" {
-  alarm_name                = "cpu-utilization"
+  alarm_name = format(
+    "%s-%s-cpu-utilization",
+    lookup(var.instance_tags, "name"), lookup(var.instance_tags, "environment")
+  )
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "2"
   metric_name               = "CPUUtilization"
