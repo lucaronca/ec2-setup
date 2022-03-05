@@ -40,33 +40,39 @@ resource "aws_security_group" "app-sg" {
     "%s-%s-%s",
     lookup(var.instance_tags, "name"), lookup(var.instance_tags, "environment"), var.security_group_name
   )
+}
 
-  // To Allow SSH Transport
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_security_group_rule" "app-sg-ssh" {
+  security_group_id = aws_security_group.app-sg.id
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
 
-  // To Allow Port 80 Transport
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  depends_on = [aws_security_group.app-sg]
+}
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_security_group_rule" "app-sg-http" {
+  security_group_id = aws_security_group.app-sg.id
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
 
-  lifecycle {
-    create_before_destroy = true
-  }
+  depends_on = [aws_security_group.app-sg]
+}
+
+resource "aws_security_group_rule" "app-sg-out" {
+  security_group_id = aws_security_group.app-sg.id
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+
+  depends_on = [aws_security_group.app-sg]
 }
 
 resource "aws_security_group_rule" "app-sg-ssl" {
@@ -79,10 +85,6 @@ resource "aws_security_group_rule" "app-sg-ssl" {
 
   count      = var.allow_tls ? 1 : 0
   depends_on = [aws_security_group.app-sg]
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 #AWS Instance
